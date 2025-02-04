@@ -1,0 +1,27 @@
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment and dependencies
+venv/
+.env
+.venv/
+
+# Ignore Django-related files
+db.sqlite3
+media/
+staticfiles/
+local_settings.py
+
+# Ignore Docker-compose override files
+docker-compose.override.yml
+
+# Git
+.git/
+.gitignore
+
+# Logs
+logs/
+*.log

@@ -1,0 +1,46 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django-related
+db.sqlite3
+media/
+staticfiles/
+*.log
+local_settings.py
+instance/
+.envrc
+.env.*
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Docker
+*.dockerfile
+docker-compose.override.yml
+
+# Coverage reports
+htmlcov/
+.coverage
+*.cover
+*.py,cover
+
+# MyPy
+.mypy_cache/
+
+# Celery
+celerybeat-schedule
+
+# PostgreSQL
+pgdata/

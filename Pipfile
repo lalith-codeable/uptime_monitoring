@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+djangorestframework = "*"
+psycopg2-binary = "*"
+redis = "*"
+celery = "*"
+requests = "*"
+dj-database-url = "*"
+python-dotenv = "*"
+
+[dev-packages]
+pytest = "*"
+mock = "*"
+
+[requires]
+python_version = "3.13"
