@@ -70,6 +70,17 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '100/hour',  # Authenticated users: 100 requests per hour
+        'anon': '10/minute',  # Anonymous users: 10 requests per minute
+    }
+}
+
 WSGI_APPLICATION = "uptime_monitor.wsgi.application"
 
 # Database Configuration
