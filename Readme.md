@@ -1,5 +1,3 @@
-Here's an enhanced and comprehensive README with full API documentation:
-
 # Uptime Monitoring Service with Discord Notifications
 
 ## Table of Contents
