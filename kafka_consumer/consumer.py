@@ -40,11 +40,7 @@ def get_last_status(website_id):
     last_record = cursor.fetchone()
     cursor.close()
     connection_pool.putconn(conn)
-
-    # Debugging: Print retrieved data
-    print(f"DEBUG: Last record for {website_id}: {last_record}")
-
-    return last_record if last_record else (None, None)  # Return status and timestamp
+    return last_record if last_record else (None, None)
 
 def save_status_log(website_id, status, response_time, last_status, last_status_change):
     """Save the status log for the website"""
@@ -52,11 +48,10 @@ def save_status_log(website_id, status, response_time, last_status, last_status_
     cursor = conn.cursor()
     new_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc)
-
-    # If the status has changed, update last_status_change timestamp
+    
     if last_status is None or last_status != status:
         last_status_change = now
-
+    
     cursor.execute(
         """
         INSERT INTO http_server_statuslog (id, website_id, status, response_time, checked_at, last_status_change)
@@ -68,11 +63,18 @@ def save_status_log(website_id, status, response_time, last_status, last_status_
     cursor.close()
     connection_pool.putconn(conn)
 
-def send_discord_notification(webhooks, website_url, status):
+def send_discord_notification(webhooks, site_name, site_url, status, timestamp, error=None):
     """Send a notification to the Discord webhooks"""
-    message = "🟢 Website is UP!" if status == "up" else "🔴 Website is DOWN!"
-    data = {"content": f"{message}\nSite: {website_url}"}
-    print(f"DEBUG: Sending notification: {data}")
+    status_message = "🟢 Website Recovery Alert" if status == "up" else "🔴 Website Down Alert"
+    data = {
+        "content": (
+            f"{status_message}\n"
+            f"**Site:** {site_name} ({site_url})\n"
+            f"**Status:** {status.upper()}\n"
+            f"**Time:** {timestamp}\n"
+            f"{f'**Error:** {error}' if error else ''}"
+        )
+    }
     for webhook in webhooks:
         try:
             response = requests.post(webhook, json=data)
@@ -85,33 +87,27 @@ def process_message(message):
     """Process the website status check from the Kafka message"""
     website_id = message.get("id")
     url = message.get("url")
-    expected_status_code = message.get("expected_status_code", 200)  # Default to 200 if not specified
+    name = message.get("name", "Unknown Website")
+    expected_status_code = message.get("expected_status_code", 200)
     webhooks = message.get("webhooks", [])
-
+    
     try:
         response = requests.get(url, timeout=10)
         status = "up" if response.status_code == expected_status_code else "down"
         response_time = response.elapsed.total_seconds()
+        error_message = None
     except requests.RequestException as e:
         status = "down"
         response_time = None
-        print(f"ERROR: Failed to check website {url}: {e}")
-
-    # Get the last recorded status and its timestamp
+        error_message = str(e)
+    
     last_status, last_status_change = get_last_status(website_id)
-
-    # Debugging: Check current and last status before saving
-    print(f"DEBUG: Last status: {last_status}, Current status: {status}")
-
-    # Save status log with correct last_status_change handling
     save_status_log(website_id, status, response_time, last_status, last_status_change)
-
-    # Send notification if it's the first check or the status has changed
+    
     if last_status is None or last_status != status:
-        print(f"DEBUG: Sending notification for {url} (status change detected)")
         if webhooks:
-            send_discord_notification(webhooks, url, status)
-
+            send_discord_notification(webhooks, name, url, status, datetime.now(timezone.utc), error_message)
+    
     print(f"Processed: {url} - Status: {status}")
 
 def start_consumer():
